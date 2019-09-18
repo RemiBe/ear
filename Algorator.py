@@ -1,4 +1,15 @@
 """
+
+
+TODO:
+    * import/export
+    * function default arguments
+    * move functions
+    * arrow names and arguments
+    * edit functions
+    * edit arrow names and arguments
+    * removing a function removes the arrows pointing at it
+    * undo, redo
 """
 
 
@@ -79,6 +90,10 @@ class Algorator(object):
         x = event.x
         y = event.y
         if self.state == STATE_FUNC:
+            for fct in self.functions:
+                if fct.clicked_on(x, y):
+                    fct.edit()
+                    return
             self.functions.append(Function(self, x, y))
         elif self.state == STATE_CASE:
             for fct in self.functions:
@@ -99,26 +114,18 @@ class Algorator(object):
 class Function(object):
 
     def __init__(self, algorator, x, y):
+        self.algorator = algorator
         canvas = algorator.canvas
-        self.canvas = canvas
         self.cx = x
         self.cy = y
         # initialize the function
         self.name = None
+        self.args = {}
         fd = FunctionDefinition(algorator.window, self)
 #        algorator.window.wait_window(fd)
 
-        # create the rectangle
-        self.text = canvas.create_text(x, y, text=self.name, font="Arial 16", fill="blue")
-        x1, y1, x2, y2 = canvas.bbox(self.text)
-        self.rect = canvas.create_rectangle(x1, y1, x2, y2)
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-        # ask for the function parameters
-        # create a text element
-        # create a rectangle around the text
+        self.create_text()
+        self.create_rectangle()
 
     def clicked_on(self, x, y):
         """Returns whether (x, y) is in this Function rectangle.
@@ -128,20 +135,43 @@ class Function(object):
     def destroy(self):
         """Deletes itself from the algorator canvas.
         """
-        self.canvas.delete(self.text)
-        self.canvas.delete(self.rect)
+        canvas = self.algorator.canvas
+        canvas.delete(self.text)
+        canvas.delete(self.rect)
+
+    def create_text(self):
+        canvas = self.algorator.canvas
+        self.text = canvas.create_text(self.cx, self.cy, text=self.name, font="Arial 16", fill="blue")
+
+    def create_rectangle(self):
+        canvas = self.algorator.canvas
+        x1, y1, x2, y2 = canvas.bbox(self.text)
+        self.rect = canvas.create_rectangle(x1, y1, x2, y2)
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+    def edit(self):
+        canvas = self.algorator.canvas
+        canvas.delete(self.text)
+        canvas.delete(self.rect)
+        fd = FunctionDefinition(self.algorator.window, self)
+        self.create_text()
+        self.create_rectangle()
 
 
 class FunctionDefinition(Toplevel):
 
     def __init__(self, parent, function):
+        # TODO should be impossible to add a new function.
         Toplevel.__init__(self, parent)
         self.transient(parent)
         self.title = "Add a new Function"
         self.parent = parent
         self.function = function
 
-        self.set_body()
+        self.set_body(function)
         if not self.initial_focus:
             self.initial_focus = self
 
@@ -150,32 +180,59 @@ class FunctionDefinition(Toplevel):
         self.initial_focus.focus_set()
         self.wait_window(self)
 
-    def set_body(self):
+    def set_body(self, function=None):
         body = Frame(self)
         self.initial_focus = body
         body.pack()
 
         self.bind("<Return>", self.save)
         self.bind("<Escape>", self.close)
+        self.bind("<Down>", lambda: self.add_argument(body))
 
         # Function name
-        self.entry = Entry(body, width=30)
-        self.entry.pack()
+        name = None
+        if function != None and function.name != None:
+            name = StringVar()
+            name.set(function.name)
+        entry = Entry(body, textvariable=name, width=30)
+        entry.pack()
+        entry.focus_set()
+        self.entries = [entry]
 
-        # Function argument
+        if function != None:
+            for name, value in function.args.items():
+                print("1 " + name + " " + value)
+                self.add_argument(body, default_name=name, default_value=value)
+
+        # Buttons
+        add_arg_button = Button(body, text="Add argument", command=lambda: self.add_argument(body))
+        add_arg_button.pack()
         close_button = Button(body, text="Save", command=self.save)
         close_button.pack()
         cancel_button = Button(body, text="Cancel", command=self.close)
         cancel_button.pack()
 
+    def add_argument(self, body, default_name=None, default_value=None):
+        name = Entry(body, textvariable=default_name, width=30) # TODO the default value is not inserted?!
+        value = Entry(body, textvariable=default_value, width=30)
+        name.pack()
+        value.pack()
+        name.focus_set()
+        self.entries.append(name)
+        self.entries.append(value)
 
     def close(self, event=None):
         self.parent.focus_set()
         self.destroy()
 
     def save(self, event=None):
-        name = self.entry.get()
-        self.function.name = name
+        self.function.name = self.entries[0].get()
+        i = 1
+        for i in range(1, len(self.entries), 2):
+            arg_name = self.entries[i].get()
+            if arg_name:
+                arg_value = self.entries[i+1].get()
+                self.function.args[arg_name] = arg_value
         self.close()
 
 
