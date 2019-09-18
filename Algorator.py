@@ -6,7 +6,6 @@ TODO:
     * function default arguments
     * move functions
     * arrow names and arguments
-    * edit functions
     * edit arrow names and arguments
     * removing a function removes the arrows pointing at it
     * undo, redo
@@ -42,11 +41,15 @@ class Algorator(object):
         for button in self.buttons.values():
             button.pack()
         self.state = None
+        self.clicked_on = None
+        self.moving = None
 
         # the canvas
         canvas = Canvas(window, width=l, height=h, bg="yellow")
         canvas.focus_set()
-        canvas.bind("<Button-1>", self.click_canvas)
+        canvas.bind("<Button-1>", self.register_position)
+        canvas.bind("<B1-Motion>", self.move)
+        canvas.bind("<ButtonRelease-1>", self.edit_canvas)
         canvas.pack()
         self.canvas = canvas
 
@@ -86,14 +89,32 @@ class Algorator(object):
         else:
             self.state = None
 
-    def click_canvas(self, event):
+    def register_position(self, event):
         x = event.x
         y = event.y
-        if self.state == STATE_FUNC:
-            for fct in self.functions:
-                if fct.clicked_on(x, y):
-                    fct.edit()
-                    return
+        for element in self.functions + self.arrows:
+            if element.clicked_on(x, y):
+                self.clicked_on = element
+                return
+
+    def move(self, event):
+        if self.clicked_on != None:
+            self.canvas.move(CURRENT, event.x - self.clicked_on.cx, event.y - self.clicked_on.cy)
+            self.clicked_on.cx = event.x
+            self.clicked_on.cy = event.y
+            self.moving = event
+
+    def edit_canvas(self, event):
+        x = event.x
+        y = event.y
+        if self.clicked_on != None:
+            if self.moving == None:
+                self.clicked_on.edit()
+            else:
+                self.clicked_on.moved(self.moving.x, self.moving.y)
+            self.clicked_on = None
+            self.moving = None
+        elif self.state == STATE_FUNC:
             self.functions.append(Function(self, x, y))
         elif self.state == STATE_CASE:
             for fct in self.functions:
@@ -124,6 +145,11 @@ class Function(object):
         fd = FunctionDefinition(algorator.window, self)
 #        algorator.window.wait_window(fd)
 
+        # TODO
+#        if not self.name:
+#            # cancelled or empty name: destroy the function
+#            self.destroy()
+#            return
         self.create_text()
         self.create_rectangle()
 
@@ -141,12 +167,12 @@ class Function(object):
 
     def create_text(self):
         canvas = self.algorator.canvas
-        self.text = canvas.create_text(self.cx, self.cy, text=self.name, font="Arial 16", fill="blue")
+        self.text = canvas.create_text(self.cx, self.cy, text=self.name, tags="selected", font="Arial 16", fill="blue")
 
     def create_rectangle(self):
         canvas = self.algorator.canvas
         x1, y1, x2, y2 = canvas.bbox(self.text)
-        self.rect = canvas.create_rectangle(x1, y1, x2, y2)
+        self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
@@ -159,6 +185,15 @@ class Function(object):
         fd = FunctionDefinition(self.algorator.window, self)
         self.create_text()
         self.create_rectangle()
+
+    def moved(self, x, y):
+        self.cx = x
+        self.cy = y
+        x1, y1, x2, y2 = self.algorator.canvas.bbox(self.text)
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
 
 
 class FunctionDefinition(Toplevel):
