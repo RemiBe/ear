@@ -141,18 +141,7 @@ class FunctionDefinition(Toplevel):
         self.parent = parent
         self.function = function
 
-        body = Frame(self)
-        self.initial_focus = body # self.body(body)
-        body.pack()
-
-        self.entry = Entry(body, width=30)
-        self.entry.pack()
-        close_button = Button(body, text="Save", command=self.save)
-        close_button.pack()
-        cancel_button = Button(body, text="Cancel", command=self.close)
-        cancel_button.pack()
-
-#        self.grab_set()
+        self.set_body()
         if not self.initial_focus:
             self.initial_focus = self
 
@@ -161,11 +150,30 @@ class FunctionDefinition(Toplevel):
         self.initial_focus.focus_set()
         self.wait_window(self)
 
-    def close(self):
+    def set_body(self):
+        body = Frame(self)
+        self.initial_focus = body
+        body.pack()
+
+        self.bind("<Return>", self.save)
+        self.bind("<Escape>", self.close)
+
+        # Function name
+        self.entry = Entry(body, width=30)
+        self.entry.pack()
+
+        # Function argument
+        close_button = Button(body, text="Save", command=self.save)
+        close_button.pack()
+        cancel_button = Button(body, text="Cancel", command=self.close)
+        cancel_button.pack()
+
+
+    def close(self, event=None):
         self.parent.focus_set()
         self.destroy()
 
-    def save(self):
+    def save(self, event=None):
         name = self.entry.get()
         self.function.name = name
         self.close()
