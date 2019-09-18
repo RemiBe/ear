@@ -79,7 +79,7 @@ class Algorator(object):
         x = event.x
         y = event.y
         if self.state == STATE_FUNC:
-            self.functions.append(Function(self.canvas, x, y))
+            self.functions.append(Function(self, x, y))
         elif self.state == STATE_CASE:
             for fct in self.functions:
                 if fct.clicked_on(x, y):
@@ -98,25 +98,17 @@ class Algorator(object):
 
 class Function(object):
 
-    def __init__(self, canvas, x, y):
+    def __init__(self, algorator, x, y):
+        canvas = algorator.canvas
         self.canvas = canvas
         self.cx = x
         self.cy = y
         # initialize the function
-        w = Tk()
-        label = Label(w, text="Add a new Function")
-        label.pack()
-        entry = Entry(w, width=30)
-        entry.pack()
-        close_button = Button(w, text="Save", command=lambda: self.get_name(w, entry))
-        close_button.pack()
-        cancel_button = Button(w, text="Cancel", command=w.quit)
-        cancel_button.pack()
-
-        print("1 " + entry.get())
+        self.name = None
+        fd = FunctionDefinition(algorator.window, self)
+#        algorator.window.wait_window(fd)
 
         # create the rectangle
-        self.name = "test"
         self.text = canvas.create_text(x, y, text=self.name, font="Arial 16", fill="blue")
         x1, y1, x2, y2 = canvas.bbox(self.text)
         self.rect = canvas.create_rectangle(x1, y1, x2, y2)
@@ -139,10 +131,44 @@ class Function(object):
         self.canvas.delete(self.text)
         self.canvas.delete(self.rect)
 
-    def get_name(self, w, entry):
-        print("2 " + entry.get())
-        w.quit()
-        return entry.get()
+
+class FunctionDefinition(Toplevel):
+
+    def __init__(self, parent, function):
+        Toplevel.__init__(self, parent)
+        self.transient(parent)
+        self.title = "Add a new Function"
+        self.parent = parent
+        self.function = function
+
+        body = Frame(self)
+        self.initial_focus = body # self.body(body)
+        body.pack()
+
+        self.entry = Entry(body, width=30)
+        self.entry.pack()
+        close_button = Button(body, text="Save", command=self.save)
+        close_button.pack()
+        cancel_button = Button(body, text="Cancel", command=self.close)
+        cancel_button.pack()
+
+#        self.grab_set()
+        if not self.initial_focus:
+            self.initial_focus = self
+
+        self.protocol("WM_DELETE_WINDOW", self.close)
+
+        self.initial_focus.focus_set()
+        self.wait_window(self)
+
+    def close(self):
+        self.parent.focus_set()
+        self.destroy()
+
+    def save(self):
+        name = self.entry.get()
+        self.function.name = name
+        self.close()
 
 
 class Arrow(object):
