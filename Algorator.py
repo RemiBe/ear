@@ -1,14 +1,55 @@
 """
 
+,----------------------------------------------,
+|                                              |
+| ,----------, ,------,  ,-------,  ,--------, |
+| | Function | | Case |  | Arrow |  | Remove | |
+| '----------' '------'  '-------'  '--------' |
+|                                              |
+| ,------------------------------------------, |
+| | Canvas                                   | |
+| |        start                             | |
+| |          |                               | |
+| |          v                               | |
+| |       ,-----,                            | |
+| |       | foo |<------------,              | |
+| |       '-----'             |              | |
+| |          |                |              | |
+| |          v                |              | |
+| |          ^                |              | |
+| |        /   \           ,-----,           | |
+| |      < case  >-------> | bar |           | |
+| |        \   /           '-----'           | |
+| |          v                               | |
+| |          |                               | |
+| |          v                               | |
+| |       ,-----,                            | |
+| |       | baz |---> end                    | |
+| |       '-----'                            | |
+| |                                          | |
+| '------------------------------------------' |
+'----------------------------------------------'
 
-TODO:
-    * import/export
-    * function default arguments
-    * move functions
-    * arrow names and arguments
-    * edit arrow names and arguments
-    * removing a function removes the arrows pointing at it
-    * undo, redo
+* Clicking on Function enables to create a function on the canvas.
+  Clicking once again disable it.
+* Clicking on Case enables to create a function on the canvas.
+  Clicking once again disable it.
+* Clicking on Arrow enables to click on two functions on the canvas
+  to link them with an arrow.
+* Clicking on Remove enables to click on a function or an arrow on the
+  canvas to remove it.
+  Removing a function removes the arrows pointing at it.
+
+TODO
+* Losange/circle for case
+* Import/Export diagrams
+* Position "Add Function window" next to root window
+* <Down> does not work yet
+* Start and End blocks.
+
+Possible improvements
+* Work on window size, colors
+* Open function parameters in split mode
 """
 
 
@@ -17,272 +58,140 @@ __version__ = "1.0"
 
 
 from tkinter import *
+from tkinter import ttk
+
+from Arrow import Arrow
+from Case import Case
+from Function import Function
 
 
-l = 1000
-h = 800
+STATE_FUNC = "function_state"
+STATE_CASE = "case_state"
+STATE_ARROW = "arrow_state"
+STATE_RM = "remove_state"
 
-STATE_FUNC = "function"
-STATE_CASE = "case"
-STATE_RM = "remove"
 
 class Algorator(object):
+    """
+
+    Clicking on a button changes the `state`.
+    """
 
     def __init__(self):
-        window = Tk()
-        self.window = window
+        self.root = Tk()
+        self.root.title("Algorator - An Algorithm Creator")
 
-        # the buttons
-        self.buttons = {
-            "f": Button(window, text="Function", command=self.state_function),
-            "c": Button(window, text="Case", command=self.state_case),
-            "r": Button(window, text="Remove", command=self.state_remove),
-        }
-        for button in self.buttons.values():
-            button.pack()
-        self.state = None
-        self.clicked_on = None
-        self.moving = None
-
-        # the canvas
-        canvas = Canvas(window, width=l, height=h, bg="yellow")
-        canvas.focus_set()
-        canvas.bind("<Button-1>", self.register_position)
-        canvas.bind("<B1-Motion>", self.move)
-        canvas.bind("<ButtonRelease-1>", self.edit_canvas)
-        canvas.pack()
-        self.canvas = canvas
-
-        # the functions
-        self.functions = []
-
-        # the arrow
-        self.start = None
-        self.arrows = []
-
-        window.mainloop()
-
-    def reset_buttons(self):
-        for button in self.buttons.values():
-            button.relief = RAISED # TODO
-
-    def state_function(self):
-        self.reset_buttons()
-        if self.state != STATE_FUNC:
-            self.state = STATE_FUNC
-            self.buttons["f"].relief = SUNKEN # TODO
-        else:
-            self.state = None
-
-    def state_case(self):
-        self.reset_buttons()
-        if self.state != STATE_CASE:
-            self.state = STATE_CASE
-            self.start = None
-        else:
-            self.state = None
-
-    def state_remove(self):
-        self.reset_buttons()
-        if self.state != STATE_RM:
-            self.state = STATE_RM
-        else:
-            self.state = None
-
-    def register_position(self, event):
-        x = event.x
-        y = event.y
-        for element in self.functions + self.arrows:
-            if element.clicked_on(x, y):
-                self.clicked_on = element
-                return
-
-    def move(self, event):
-        if self.clicked_on != None:
-            self.canvas.move(CURRENT, event.x - self.clicked_on.cx, event.y - self.clicked_on.cy)
-            self.clicked_on.cx = event.x
-            self.clicked_on.cy = event.y
-            self.moving = event
-
-    def edit_canvas(self, event):
-        x = event.x
-        y = event.y
-        if self.clicked_on != None:
-            if self.moving == None:
-                self.clicked_on.edit()
-            else:
-                self.clicked_on.moved(self.moving.x, self.moving.y)
-            self.clicked_on = None
-            self.moving = None
-        elif self.state == STATE_FUNC:
-            self.functions.append(Function(self, x, y))
-        elif self.state == STATE_CASE:
-            for fct in self.functions:
-                if fct.clicked_on(x, y):
-                    if self.start == None:
-                        self.start = fct
-                    else:
-                        self.arrows.append(Arrow(self.canvas, self.start, fct))
-                        self.start = None
-                    break
-        elif self.state == STATE_RM:
-            for element in self.functions + self.arrows:
-                if element.clicked_on(x, y):
-                    element.destroy()
-                    break
-
-
-class Function(object):
-
-    def __init__(self, algorator, x, y):
-        self.algorator = algorator
-        canvas = algorator.canvas
-        self.cx = x
-        self.cy = y
-        # initialize the function
-        self.name = None
-        self.args = {}
-        fd = FunctionDefinition(algorator.window, self)
-#        algorator.window.wait_window(fd)
-
-        # TODO
-#        if not self.name:
-#            # cancelled or empty name: destroy the function
-#            self.destroy()
-#            return
-        self.create_text()
-        self.create_rectangle()
-
-    def clicked_on(self, x, y):
-        """Returns whether (x, y) is in this Function rectangle.
-        """
-        return x >= self.x1 and x <= self.x2 and y >= self.y1 and y <= self.y2
-
-    def destroy(self):
-        """Deletes itself from the algorator canvas.
-        """
-        canvas = self.algorator.canvas
-        canvas.delete(self.text)
-        canvas.delete(self.rect)
-
-    def create_text(self):
-        canvas = self.algorator.canvas
-        self.text = canvas.create_text(self.cx, self.cy, text=self.name, tags="selected", font="Arial 16", fill="blue")
-
-    def create_rectangle(self):
-        canvas = self.algorator.canvas
-        x1, y1, x2, y2 = canvas.bbox(self.text)
-        self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-
-    def edit(self):
-        canvas = self.algorator.canvas
-        canvas.delete(self.text)
-        canvas.delete(self.rect)
-        fd = FunctionDefinition(self.algorator.window, self)
-        self.create_text()
-        self.create_rectangle()
-
-    def moved(self, x, y):
-        self.cx = x
-        self.cy = y
-        x1, y1, x2, y2 = self.algorator.canvas.bbox(self.text)
-        self.x1 = x1
-        self.y1 = y1
-        self.x2 = x2
-        self.y2 = y2
-
-
-class FunctionDefinition(Toplevel):
-
-    def __init__(self, parent, function):
-        # TODO should be impossible to add a new function.
-        Toplevel.__init__(self, parent)
-        self.transient(parent)
-        self.title = "Add a new Function"
-        self.parent = parent
-        self.function = function
-
-        self.set_body(function)
-        if not self.initial_focus:
-            self.initial_focus = self
-
-        self.protocol("WM_DELETE_WINDOW", self.close)
-
-        self.initial_focus.focus_set()
-        self.wait_window(self)
-
-    def set_body(self, function=None):
-        body = Frame(self)
-        self.initial_focus = body
-        body.pack()
-
-        self.bind("<Return>", self.save)
-        self.bind("<Escape>", self.close)
-        self.bind("<Down>", lambda: self.add_argument(body))
-
-        # Function name
-        name = None
-        if function != None and function.name != None:
-            name = StringVar()
-            name.set(function.name)
-        entry = Entry(body, textvariable=name, width=30)
-        entry.pack()
-        entry.focus_set()
-        self.entries = [entry]
-
-        if function != None:
-            for name, value in function.args.items():
-                print("1 " + name + " " + value)
-                self.add_argument(body, default_name=name, default_value=value)
+        self.mainframe = ttk.Frame(self.root, padding="3 3 12 12")
+        self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
+        self.root.columnconfigure(0, weight=1)
+        self.root.rowconfigure(0, weight=1)
 
         # Buttons
-        add_arg_button = Button(body, text="Add argument", command=lambda: self.add_argument(body))
-        add_arg_button.pack()
-        close_button = Button(body, text="Save", command=self.save)
-        close_button.pack()
-        cancel_button = Button(body, text="Cancel", command=self.close)
-        cancel_button.pack()
+        self.state = None
+        fbutton = ttk.Button(self.mainframe, text="Function", command=lambda: self.change_state(STATE_FUNC))
+        cbutton = ttk.Button(self.mainframe, text="Case", command=lambda: self.change_state(STATE_CASE))
+        abutton = ttk.Button(self.mainframe, text="Arrow", command=lambda: self.change_state(STATE_ARROW))
+        rbutton = ttk.Button(self.mainframe, text="Remove", command=lambda: self.change_state(STATE_RM))
+        fbutton.grid(column=1, row=1)
+        cbutton.grid(column=2, row=1)
+        abutton.grid(column=3, row=1)
+        rbutton.grid(column=4, row=1)
+        self.buttons = {
+                STATE_FUNC: fbutton,
+                STATE_CASE: cbutton,
+                STATE_ARROW: abutton,
+                STATE_RM: rbutton
+        }
 
-    def add_argument(self, body, default_name=None, default_value=None):
-        name = Entry(body, textvariable=default_name, width=30) # TODO the default value is not inserted?!
-        value = Entry(body, textvariable=default_value, width=30)
-        name.pack()
-        value.pack()
-        name.focus_set()
-        self.entries.append(name)
-        self.entries.append(value)
+        # Canvas
+        self.canvas = Canvas(self.mainframe, width=600, height=600, bg="grey") # TODO the mainframe should be grey
+        self.canvas.grid(column=1, row=2, columnspan=len(self.buttons))
+        self.canvas.bind("<Button-1>", self.register_position)
+        self.canvas.bind("<B1-Motion>", self.hold_click)
+        self.canvas.bind("<ButtonRelease-1>", self.simple_click)
+        self.functions = []
+        self.cases = []
+        self.arrows = []
+        self.start = None
 
-    def close(self, event=None):
-        self.parent.focus_set()
-        self.destroy()
+        # Display
+        for child in self.mainframe.winfo_children():
+            child.grid_configure(padx=5, pady=5)
 
-    def save(self, event=None):
-        self.function.name = self.entries[0].get()
-        i = 1
-        for i in range(1, len(self.entries), 2):
-            arg_name = self.entries[i].get()
-            if arg_name:
-                arg_value = self.entries[i+1].get()
-                self.function.args[arg_name] = arg_value
-        self.close()
+        self.root.mainloop()
 
+    def change_state(self, new_state):
+        for button in self.buttons.values():
+            button.state(["!pressed"])
+        if self.state == new_state:
+            self.state = None
+        else:
+            self.state = new_state
+            self.buttons[new_state].state(["pressed"])
+        print(self.state)
 
-class Arrow(object):
+    def register_position(self, event):
+        print("registered position: start is {}".format(self.start))
+        self.moving = False
+        self.selected = None
+        self.selected_l = None
+        for f in self.functions:
+            if f.clicked_on(event.x, event.y):
+                self.select(f, self.functions)
+                return
+        for c in self.cases:
+            if c.clicked_on(event.x, event.y):
+                self.select(c, self.cases)
+                return
+        for a in self.arrows:
+            if a.clicked_on(event.x, event.y):
+                self.select(a, self.arrows)
+                return
 
-    def __init__(self, canvas, fct_start, fct_end):
-        self.canvas = canvas
-        self.line = canvas.create_line(fct_start.cx, fct_start.cy, fct_end.cx, fct_end.cy)
+    def select(self, elem, elem_lst):
+        if self.start is not None and self.start == self.selected:
+            self.selected = None
+            self.selected_l = None
+        else:
+            self.selected = elem
+            self.selected_l = elem_lst
 
-    def clicked_on(self, x, y):
-        return False # TODO
+    def simple_click(self, event):
+        """If clicked on an empty space: add a function/case/arrow,
+        Else if in state "remove", remove the function/case/arrow,
+        Else edit the function/case.
+        """
+        print("simple_click: selected is {}, moving is {}".format(self.selected, self.moving))
+        if self.selected is None:
+            if self.state == STATE_FUNC:
+                f = Function(self, event.x, event.y)
+                if not f.cancelled:
+                    self.functions.append(f)
+            elif self.state == STATE_CASE:
+                c = Case(self, event.x, event.y)
+                if not c.cancelled:
+                    self.cases.append(c)
+        else:
+            if self.state == STATE_RM and not self.moving:
+                self.selected.destroy()
+                self.selected_l.remove(self.selected)
+            elif self.state == STATE_ARROW:
+                if self.start is None:
+                    self.start = self.selected
+                else:
+                    a = Arrow(self, self.start, self.selected)
+                    self.arrows.append(a)
+                    self.start = None
+            elif not self.moving and type(self.selected) != Arrow:
+                self.selected.edit()
+        self.moving = False
 
-    def destroy(self):
-        self.canvas.delete(self.line)
+    def hold_click(self, event):
+        if self.selected is not None and type(self.selected) != Arrow:
+            self.moving = True
+            self.selected.move(event)
 
 if __name__ == "__main__":
-    Algorator()
+    algorator = Algorator()
+
 
