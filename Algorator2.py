@@ -40,8 +40,15 @@
   canvas to remove it.
   Removing a function removes the arrows pointing at it.
 
-Other functions:
-* Be able to move a function
+TODO
+* Losange/circle for case
+* Import/Export diagrams
+* Position "Add Function window" next to root window
+* <Down> does not work yet
+* Start and End blocks.
+
+Possible improvements
+* Work on window size, colors
 * Open function parameters in split mode
 """
 
@@ -97,7 +104,7 @@ class Algorator(object):
         }
 
         # Canvas
-        self.canvas = Canvas(self.mainframe, bg="grey") # TODO the mainframe should be grey
+        self.canvas = Canvas(self.mainframe, width=600, height=600, bg="grey") # TODO the mainframe should be grey
         self.canvas.grid(column=1, row=2, columnspan=len(self.buttons))
         self.canvas.bind("<Button-1>", self.register_position)
         self.canvas.bind("<B1-Motion>", self.hold_click)
@@ -158,11 +165,11 @@ class Algorator(object):
         if self.selected is None:
             if self.state == STATE_FUNC:
                 f = Function(self, event.x, event.y)
-                if f.saved:
+                if not f.cancelled:
                     self.functions.append(f)
             elif self.state == STATE_CASE:
                 c = Case(self, event.x, event.y)
-                if c.saved:
+                if not c.cancelled:
                     self.cases.append(c)
         else:
             if self.state == STATE_RM and not self.moving:
@@ -173,9 +180,10 @@ class Algorator(object):
                     self.start = self.selected
                 else:
                     a = Arrow(self, self.start, self.selected)
-                    if a.saved:
-                        self.arrows.append(a)
+                    self.arrows.append(a)
                     self.start = None
+            elif not self.moving and type(self.selected) != Arrow:
+                self.selected.edit()
         self.moving = False
 
     def hold_click(self, event):

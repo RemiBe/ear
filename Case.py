@@ -1,11 +1,11 @@
 
 
-from Element import Element
+from Block import Block
 
-class Case(Element):
+class Case(Block):
 
     def __init__(self, algorator, x, y):
-        Element.__init__(self, algorator, x, y)
+        Block.__init__(self, algorator, x, y)
 
     def draw(self, x, y, name):
         # TODO losange or circle

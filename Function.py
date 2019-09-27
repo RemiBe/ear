@@ -2,15 +2,19 @@
 """
 
 
-from Element import Element
+from tkinter import *
+
+from Block import Block
 
 
-class Function(Element):
+class Function(Block):
 
     """
     """
     def __init__(self, algorator, x, y):
-        Element.__init__(self, algorator, x, y)
+        self.text = None
+        self.rect = None
+        Block.__init__(self, algorator, x, y)
 
     def draw(self, x, y, name):
         canvas = self.algorator.canvas
@@ -31,6 +35,7 @@ class Function(Element):
         return x >= self.x1 and x <= self.x2 and y >= self.y1 and y <= self.y2
 
     def destroy(self):
+        Block.destroy(self)
         canvas = self.algorator.canvas
         canvas.delete(self.text)
         canvas.delete(self.rect)
