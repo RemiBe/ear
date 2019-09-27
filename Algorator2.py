@@ -42,6 +42,7 @@
 
 Other functions:
 * Be able to move a function
+* Open function parameters in split mode
 """
 
 
@@ -51,6 +52,8 @@ __version__ = "1.0"
 
 from tkinter import *
 from tkinter import ttk
+
+from Function import Function
 
 
 STATE_FUNC = "function_state"
@@ -74,7 +77,7 @@ class Algorator(object):
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
 
-        # State
+        # Buttons
         self.state = None
         fbutton = ttk.Button(self.mainframe, text="Function", command=lambda: self.change_state(STATE_FUNC))
         cbutton = ttk.Button(self.mainframe, text="Case", command=lambda: self.change_state(STATE_CASE))
@@ -90,6 +93,14 @@ class Algorator(object):
                 STATE_ARROW: abutton,
                 STATE_RM: rbutton
         }
+
+        # Canvas
+        self.canvas = Canvas(self.mainframe, bg="grey") # TODO the mainframe should be grey
+        self.canvas.grid(column=1, row=2, columnspan=len(self.buttons))
+        self.canvas.bind("<Button-1>", self.register_position)
+        self.canvas.bind("<B1-Motion>", self.hold_click)
+        self.canvas.bind("<ButtonRelease-1>", self.simple_click)
+        self.functions = []
 
         # Display
         for child in self.mainframe.winfo_children():
@@ -107,7 +118,35 @@ class Algorator(object):
             self.buttons[new_state].state(["pressed"])
         print(self.state)
 
+    def register_position(self, event):
+        self.moving = False
+        self.selected = None
+        self.selected_l = None
+        for f in self.functions:
+            if f.clicked_on(event.x, event.y):
+                self.selected = f
+                self.selected_l = self.functions
+                return
 
+    def simple_click(self, event):
+        """If clicked on an empty space: add a function/case/arrow,
+        Else if in state "remove", remove the function/case/arrow,
+        Else edit the function/case.
+        """
+        if self.selected is None:
+            if self.state == STATE_FUNC:
+                f = Function(self, event.x, event.y)
+                if f.saved:
+                    self.functions.append(f)
+        else:
+            if self.state == STATE_RM and not self.moving:
+                self.selected.destroy()
+                self.selected_l.remove(self.selected)
+
+    def hold_click(self, event):
+        if self.selected is not None:
+            self.moving = True
+            self.selected.move(event)
 
 if __name__ == "__main__":
     algorator = Algorator()
