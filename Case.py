@@ -1,21 +1,17 @@
-"""
-"""
 
 
 from Element import Element
 
+class Case(Element):
 
-class Function(Element):
-
-    """
-    """
     def __init__(self, algorator, x, y):
         Element.__init__(self, algorator, x, y)
 
     def draw(self, x, y, name):
+        # TODO losange or circle
         canvas = self.algorator.canvas
 
-        self.text = canvas.create_text(x, y, text=name, tags="selected", fill="blue")
+        self.text = canvas.create_text(x, y, text=name, tags="selected", fill="red")
         x1, y1, x2, y2 = canvas.bbox(self.text)
         self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
 

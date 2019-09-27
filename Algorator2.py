@@ -53,6 +53,8 @@ __version__ = "1.0"
 from tkinter import *
 from tkinter import ttk
 
+from Arrow import Arrow
+from Case import Case
 from Function import Function
 
 
@@ -101,6 +103,9 @@ class Algorator(object):
         self.canvas.bind("<B1-Motion>", self.hold_click)
         self.canvas.bind("<ButtonRelease-1>", self.simple_click)
         self.functions = []
+        self.cases = []
+        self.arrows = []
+        self.start = None
 
         # Display
         for child in self.mainframe.winfo_children():
@@ -119,32 +124,62 @@ class Algorator(object):
         print(self.state)
 
     def register_position(self, event):
+        print("registered position: start is {}".format(self.start))
         self.moving = False
         self.selected = None
         self.selected_l = None
         for f in self.functions:
             if f.clicked_on(event.x, event.y):
-                self.selected = f
-                self.selected_l = self.functions
+                self.select(f, self.functions)
                 return
+        for c in self.cases:
+            if c.clicked_on(event.x, event.y):
+                self.select(c, self.cases)
+                return
+        for a in self.arrows:
+            if a.clicked_on(event.x, event.y):
+                self.select(a, self.arrows)
+                return
+
+    def select(self, elem, elem_lst):
+        if self.start is not None and self.start == self.selected:
+            self.selected = None
+            self.selected_l = None
+        else:
+            self.selected = elem
+            self.selected_l = elem_lst
 
     def simple_click(self, event):
         """If clicked on an empty space: add a function/case/arrow,
         Else if in state "remove", remove the function/case/arrow,
         Else edit the function/case.
         """
+        print("simple_click: selected is {}, moving is {}".format(self.selected, self.moving))
         if self.selected is None:
             if self.state == STATE_FUNC:
                 f = Function(self, event.x, event.y)
                 if f.saved:
                     self.functions.append(f)
+            elif self.state == STATE_CASE:
+                c = Case(self, event.x, event.y)
+                if c.saved:
+                    self.cases.append(c)
         else:
             if self.state == STATE_RM and not self.moving:
                 self.selected.destroy()
                 self.selected_l.remove(self.selected)
+            elif self.state == STATE_ARROW:
+                if self.start is None:
+                    self.start = self.selected
+                else:
+                    a = Arrow(self, self.start, self.selected)
+                    if a.saved:
+                        self.arrows.append(a)
+                    self.start = None
+        self.moving = False
 
     def hold_click(self, event):
-        if self.selected is not None:
+        if self.selected is not None and type(self.selected) != Arrow:
             self.moving = True
             self.selected.move(event)
 
