@@ -46,6 +46,8 @@ TODO
 * Position "Add Function window" next to root window
 * <Down> does not work yet
 * Start and End blocks.
+* Use arcs instead of lines for arrows to specify loops
+* Identify arcs to choose which condition leads to which function
 
 Possible improvements
 * Work on window size, colors
