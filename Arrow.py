@@ -2,6 +2,7 @@
 
 from Case import Case
 from EditWindow import EditWindow
+import Properties
 
 
 class Arrow(object):
@@ -32,33 +33,9 @@ class Arrow(object):
         x = (start.cx + to.cx) / 2
         y = (start.cy + to.cy) / 2
         if self.name is not None:
-            self.text = canvas.create_text(x, y, text=self.name, tags="selected", fill="black")
+            self.text = canvas.create_text(x, y, text=self.name, tags="selected", fill="black", font=Properties.FONT)
             x1, y1, x2, y2 = canvas.bbox(self.text)
             self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
-
-    def draw_arrow(self, start, to):
-        canvas = self.algorator.canvas
-        side = self.get_side()
-        if side == "Down":
-            start_cx = start.cx
-            start_cy = max(start.y1, start.y2)
-            to_cx = to.cx
-            to_cy = min(to.y1, to.y2)
-        elif side == "Up":
-            start_cx = start.cx
-            start_cy = min(start.y1, start.y2)
-            to_cx = to.cx
-            to_cy = max(to.y1, to.y2)
-        else:
-            start_cy = start.cy
-            to_cy = to.cy
-            if side == "Left":
-                start_cx = min(start.x1, start.x2)
-                to_cx = max(to.x1, to.x2)
-            else:
-                start_cx = max(start.x1, start.x2)
-                to_cx = min(to.x1, to.x2)
-        self.line = canvas.create_line(start_cx, start_cy, to_cx, to_cy)
 
     def clicked_on(self, x, y):
         if self.start.cx < self.to.cx:
@@ -90,6 +67,32 @@ class Arrow(object):
             canvas.delete(self.text)
             canvas.delete(self.rect)
 
+    ### Drawing an arrow ###
+
+    def draw_arrow(self, start, to):
+        canvas = self.algorator.canvas
+        side = self.get_side()
+        if side == "Down":
+            start_cx = start.cx
+            start_cy = max(start.y1, start.y2)
+            to_cx = to.cx
+            to_cy = min(to.y1, to.y2)
+        elif side == "Up":
+            start_cx = start.cx
+            start_cy = min(start.y1, start.y2)
+            to_cx = to.cx
+            to_cy = max(to.y1, to.y2)
+        else:
+            start_cy = start.cy
+            to_cy = to.cy
+            if side == "Left":
+                start_cx = min(start.x1, start.x2)
+                to_cx = max(to.x1, to.x2)
+            else:
+                start_cx = max(start.x1, start.x2)
+                to_cx = min(to.x1, to.x2)
+        self.line = canvas.create_line(start_cx, start_cy, to_cx, to_cy)
+
     def get_side(self):
         """
                                 to.cx  start.cx
@@ -117,4 +120,9 @@ class Arrow(object):
         else:
             return "Left" if self.start.cx > self.to.cx else "Right"
 
-
+    def draw_arrow_head(start_x, start_y, to_x, to_y):
+        """
+        start +----------------> to
+        """
+        # TODO
+        pass

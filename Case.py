@@ -1,5 +1,5 @@
 
-
+import Properties
 from Block import Block
 
 class Case(Block):
@@ -11,7 +11,7 @@ class Case(Block):
         # TODO losange or circle
         canvas = self.algorator.canvas
 
-        self.text = canvas.create_text(x, y, text=name, tags="selected", fill="red")
+        self.text = canvas.create_text(x, y, text=name, tags="selected", fill="red", font=Properties.FONT)
         x1, y1, x2, y2 = canvas.bbox(self.text)
         self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
 

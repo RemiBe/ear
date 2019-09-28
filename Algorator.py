@@ -31,9 +31,9 @@
 '----------------------------------------------'
 
 * Clicking on Function enables to create a function on the canvas.
-  Clicking once again disable it.
+  Clicking once again disables it.
 * Clicking on Case enables to create a function on the canvas.
-  Clicking once again disable it.
+  Clicking once again disables it.
 * Clicking on Arrow enables to click on two functions on the canvas
   to link them with an arrow.
 * Clicking on Remove enables to click on a function or an arrow on the
@@ -47,10 +47,11 @@ TODO
 * <Down> does not work yet
 * Enable to remove an argument.
 * Start and End blocks.
-* Use arcs instead of lines for arrows to specify loops
-* Identify arcs to choose which condition leads to which function
+x Use arcs instead of lines for arrows to specify loops -> loops are not allowed
+o Identify arcs to choose which condition leads to which function
 * Editing an arrow and saving with an empty name removes the arrow,
   printing a message before doing it.
+* Do not draw the arrow inside the text
 
 Possible improvements
 * Work on window size, colors
