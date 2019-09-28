@@ -31,6 +31,12 @@ class Case(Block):
         canvas.delete(self.text)
         canvas.delete(self.rect)
 
+    def init_window_name(self):
+        if self.name is None:
+            return "Add a Case"
+        else:
+            return "Edit Case {}".format(self.name)
+
     def __str__(self):
         return "{}:".format(self.name)
 

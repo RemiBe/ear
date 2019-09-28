@@ -40,6 +40,12 @@ class Function(Block):
         canvas.delete(self.text)
         canvas.delete(self.rect)
 
+    def init_window_name(self):
+        if self.name is None:
+            return "Add a Function"
+        else:
+            return "Edit Function {}".format(self.name)
+
     def __str__(self):
         return "{}:".format(self.name)
 

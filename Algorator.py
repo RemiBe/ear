@@ -45,9 +45,12 @@ TODO
 * Import/Export diagrams
 * Position "Add Function window" next to root window
 * <Down> does not work yet
+* Enable to remove an argument.
 * Start and End blocks.
 * Use arcs instead of lines for arrows to specify loops
 * Identify arcs to choose which condition leads to which function
+* Editing an arrow and saving with an empty name removes the arrow,
+  printing a message before doing it.
 
 Possible improvements
 * Work on window size, colors
@@ -184,7 +187,7 @@ class Algorator(object):
                     a = Arrow(self, self.start, self.selected)
                     self.arrows.append(a)
                     self.start = None
-            elif not self.moving and type(self.selected) != Arrow:
+            elif not self.moving:
                 self.selected.edit()
         self.moving = False
 
