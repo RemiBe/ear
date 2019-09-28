@@ -28,11 +28,7 @@ class Arrow(object):
 
     def draw(self, start, to):
         canvas = self.algorator.canvas
-        self.line = canvas.create_line(
-                start.cx,
-                start.cy,
-                to.cx,
-                to.cy)
+        self.draw_arrow(start, to)
         x = (start.cx + to.cx) / 2
         y = (start.cy + to.cy) / 2
         if self.name is not None:
@@ -40,8 +36,29 @@ class Arrow(object):
             x1, y1, x2, y2 = canvas.bbox(self.text)
             self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
 
-    def draw_arrow(self):
-        pass
+    def draw_arrow(self, start, to):
+        canvas = self.algorator.canvas
+        side = self.get_side()
+        if side == "Down":
+            start_cx = start.cx
+            start_cy = max(start.y1, start.y2)
+            to_cx = to.cx
+            to_cy = min(to.y1, to.y2)
+        elif side == "Up":
+            start_cx = start.cx
+            start_cy = min(start.y1, start.y2)
+            to_cx = to.cx
+            to_cy = max(to.y1, to.y2)
+        else:
+            start_cy = start.cy
+            to_cy = to.cy
+            if side == "Left":
+                start_cx = min(start.x1, start.x2)
+                to_cx = max(to.x1, to.x2)
+            else:
+                start_cx = max(start.x1, start.x2)
+                to_cx = min(to.x1, to.x2)
+        self.line = canvas.create_line(start_cx, start_cy, to_cx, to_cy)
 
     def clicked_on(self, x, y):
         if self.start.cx < self.to.cx:
@@ -73,22 +90,31 @@ class Arrow(object):
             canvas.delete(self.text)
             canvas.delete(self.rect)
 
-    def get_side(ax, ay, bx, by):
-        """     ,------------,
-                | A (ax, ay) |   v
-                '------------'   | dy
-                      /          ^
-                     /
-              ,------------,
-              | B (bx, by) |
-              '------------'
+    def get_side(self):
         """
-        dy = 5
-        if ay < by - dy:
+                                to.cx  start.cx
+                    +---------------|--|---------------> x
+                    |
+                    |
+        start_y_min -              ,-------,
+                    |              | start |
+        start_y_max -              '-------'
+                    |                 /  here we return "Down"
+                    |                /
+           to_y_min |             ,----,
+                    |             | to |
+           to_y_max |             '----'
+                    v y
+        """
+        start_y_max = max(self.start.y1, self.start.y2)
+        start_y_min = min(self.start.y1, self.start.y2)
+        to_y_max = max(self.to.y1, self.to.y2)
+        to_y_min = min(self.to.y1, self.to.y2)
+        if start_y_max < to_y_min:
             return "Down"
-        elif ay > by + dy:
+        elif start_y_min > to_y_max:
             return "Up"
         else:
-            return "Left" if ax > ay else "Right"
+            return "Left" if self.start.cx > self.to.cx else "Right"
 
 
