@@ -10,12 +10,10 @@ import Properties
 
 class Function(Block):
 
-    """
-    """
-    def __init__(self, algorator, x, y):
+    def __init__(self, algorator, x, y, name=None):
         self.text = None
         self.rect = None
-        Block.__init__(self, algorator, x, y)
+        Block.__init__(self, algorator, x, y, name=name)
 
     def draw(self, x, y, name):
         canvas = self.algorator.canvas

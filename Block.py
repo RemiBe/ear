@@ -14,14 +14,15 @@ class Block(object):
     and Cases.
     """
 
-    def __init__(self, algorator, x, y):
+    def __init__(self, algorator, x, y, name=None):
         global i
         self.cancelled = None
         self.algorator = algorator
         self.arrows = []
-        self.name = None
+        self.name = name
         self.args = {}
-        self.edit()
+        if name is None:
+            self.edit()
         if self.cancelled is None:
             self.cancelled = False
             self.draw(x, y, self.name)

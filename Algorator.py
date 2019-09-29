@@ -41,17 +41,19 @@
   Removing a function removes the arrows pointing at it.
 
 TODO
-* Losange/circle for case
 * Import/Export diagrams
 * Position "Add Function window" next to root window
 * <Down> does not work yet
 * Enable to remove an argument.
-* Start and End blocks.
-x Use arcs instead of lines for arrows to specify loops -> loops are not allowed
-o Identify arcs to choose which condition leads to which function
 * Editing an arrow and saving with an empty name removes the arrow,
   printing a message before doing it.
 * Do not draw the arrow inside the text
+* Scrollbar in the canvas
+o Identify arcs to choose which condition leads to which function
+o Draw arrow head
+o Start and End blocks.
+x Losange/circle for case -> would be too big
+x Use arcs instead of lines for arrows to specify loops -> loops are not allowed
 
 Possible improvements
 * Work on window size, colors
@@ -69,6 +71,7 @@ from tkinter import ttk
 from Arrow import Arrow
 from Case import Case
 from Function import Function
+import Properties
 
 
 STATE_FUNC = "function_state"
@@ -123,6 +126,12 @@ class Algorator(object):
         # Display
         for child in self.mainframe.winfo_children():
             child.grid_configure(padx=5, pady=5)
+
+        # Create start and end blocks
+        d = 30
+        start_f = Function(self, Properties.WINDOW_WIDTH / 2, d, name="start")
+        end_f = Function(self, Properties.WINDOW_WIDTH / 2, Properties.WINDOW_HEIGHT - d, name="end")
+        self.functions += [start_f, end_f]
 
         self.root.mainloop()
 
