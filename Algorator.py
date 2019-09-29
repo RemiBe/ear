@@ -49,6 +49,7 @@ TODO
   printing a message before doing it.
 * Do not draw the arrow inside the text
 * Scrollbar in the canvas
+* undo/redo
 o Identify arcs to choose which condition leads to which function
 o Draw arrow head
 o Start and End blocks.
@@ -66,6 +67,7 @@ __version__ = "1.0"
 
 
 from tkinter import *
+from tkinter import filedialog
 from tkinter import ttk
 
 from Arrow import Arrow
@@ -82,8 +84,19 @@ STATE_RM = "remove_state"
 
 class Algorator(object):
     """
-
-    Clicking on a button changes the `state`.
+    Attributes
+        root: The Tkinter root window
+        mainframe: The main frame of the root window
+        state: Defines whether we should add an Element on the canvas
+            and its type, or whether we should remove an Element
+        buttons: All the buttons of the root window
+        canvas: Where to draw the algorithm
+        functions: The Functions created
+        cases: The Cases created
+        arrows: The Arrows created
+        selected: The last element on which the user clicked
+        moving: Whether the user is moving the selected element
+        start: In Arrow state, remembers the last clicked element
     """
 
     def __init__(self):
@@ -101,15 +114,21 @@ class Algorator(object):
         cbutton = ttk.Button(self.mainframe, text="Case", command=lambda: self.change_state(STATE_CASE))
         abutton = ttk.Button(self.mainframe, text="Arrow", command=lambda: self.change_state(STATE_ARROW))
         rbutton = ttk.Button(self.mainframe, text="Remove", command=lambda: self.change_state(STATE_RM))
+        ibutton = ttk.Button(self.mainframe, text="Import", command=self.import_event)
+        ebutton = ttk.Button(self.mainframe, text="Export", command=self.export_event)
         fbutton.grid(column=1, row=1)
         cbutton.grid(column=2, row=1)
         abutton.grid(column=3, row=1)
         rbutton.grid(column=4, row=1)
+        ibutton.grid(column=5, row=1)
+        ebutton.grid(column=6, row=1)
         self.buttons = {
                 STATE_FUNC: fbutton,
                 STATE_CASE: cbutton,
                 STATE_ARROW: abutton,
-                STATE_RM: rbutton
+                STATE_RM: rbutton,
+                "import": ibutton,
+                "export": ebutton,
         }
 
         # Canvas
@@ -205,6 +224,13 @@ class Algorator(object):
         if self.selected is not None and type(self.selected) != Arrow:
             self.moving = True
             self.selected.move(event)
+
+    def import_event(self):
+        filename = filedialog.askopenfilename()
+        print("importing " + filename)
+
+    def export_event(self):
+        filename = filedialog.asksaveasfilename()
 
 if __name__ == "__main__":
     algorator = Algorator()
