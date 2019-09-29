@@ -34,6 +34,10 @@ class Case(Block):
         return x >= self.x1 and x <= self.x2 and y >= self.y1 and y <= self.y2
 
     def destroy(self):
+        Block.destroy(self)
+        self.algorator.cases.remove(self)
+
+    def destroy_draw(self):
         canvas = self.algorator.canvas
         canvas.delete(self.text)
         canvas.delete(self.rect)
@@ -46,8 +50,8 @@ class Case(Block):
 
     def export(self, f_out):
         Block.export(self, f_out)
-        f_out.write("\tcx: {}\n".format(self.cx))
-        f_out.write("\tcy: {}\n".format(self.cy))
+        f_out.write("      cx: {}\n".format(self.cx))
+        f_out.write("      cy: {}\n".format(self.cy))
 
     def __str__(self):
         return "{}:".format(self.name)

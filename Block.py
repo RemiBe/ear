@@ -2,6 +2,8 @@
 """
 
 
+import copy
+
 from tkinter import *
 import tkinter.ttk as ttk
 
@@ -42,19 +44,22 @@ class Block(object):
         ew = EditWindow(self.algorator.root, self, True)
 
     def move(self, event):
-        self.destroy()
+        self.destroy_draw()
         self.draw(event.x, event.y, self.name)
         for arrow in self.arrows:
             arrow.move(event)
 
     def destroy(self):
-        for arrow in self.arrows:
+        print("destroying {}; arrows: {}".format(self.name, [a.name for a in self.arrows]))
+        for arrow in copy.copy(self.arrows):
             arrow.destroy()
+        self.arrows = []
+        self.destroy_draw()
 
     def export(self, f_out):
-        f_out.write("\tid: {}\n".format(self.id))
-        f_out.write("\tname: {}\n".format(self.name))
-        f_out.write("\targs:\n")
+        f_out.write("    - id: {}\n".format(self.id))
+        f_out.write("      name: {}\n".format(self.name))
+        f_out.write("      args:\n")
         for k, v in self.args.items():
             f_out.write("\t\t{}: {}\n".format(k, v))
         f_out.write("\tarrows: {}\n".format([a.id for a in self.arrows]))

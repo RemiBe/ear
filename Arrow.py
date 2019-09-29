@@ -74,9 +74,6 @@ class Arrow(object):
         text: The id of the Canvas element displaying the function name
         line: The id of the Canvas element displaying the arrow line
         head: The id of the Canvas element displaying the arrow head
-        x1, y1, x2, y2: coordinates of the upper left and bottow right
-            points of the rect
-        cx, cy: coordinates of the center of the rect
     """
 
     def __init__(self, algorator, start, to):
@@ -110,29 +107,36 @@ class Arrow(object):
             self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
 
     def clicked_on(self, x, y):
-        if self.start.cx < self.to.cx:
-            x1 = self.start.cx
-            x2 = self.to.cx
+        d = 10 # enable 3 pixels around the arrow
+        y1 = min(self.start.cy, self.to.cy)
+        y2 = max(self.start.cy, self.to.cy)
+        if self.start.cx == self.to.cx:
+            cx = self.start.cx
+            return x >= cx - d and x <= cx + d and y >= y1 and y <= y2
         else:
-            x1 = self.to.cx
-            x2 = self.start.cx
-        if self.start.cy < self.to.cy:
-            y1 = self.start.cy
-            y2 = self.to.cy
-        else:
-            y1 = self.to.cy
-            y2 = self.start.cy
-        return x >= x1 and x <= x2 and y >= y1 and y <= y2
+            # TODO use a circle to select the arrow
+            x1 = min(self.start.cx, self.to.cx)
+            x2 = max(self.start.cx, self.to.cx)
+            a = (y2 - y1) / (x2 - x1)
+            yt = a*(x-x1) + y1
+            return y >= yt - d and y <= yt + d
 
     def edit(self):
         if self.name is not None:
             ew = EditWindow(self.algorator.root, self, True)
 
     def move(self, event):
-        self.destroy()
+        self.destroy_draw()
         self.draw(self.start, self.to)
 
     def destroy(self):
+        print("destroying {}; start={}, to={}".format(self.name, self.start.name, self.to.name))
+        self.start.arrows.remove(self)
+        self.to.arrows.remove(self)
+        self.algorator.arrows.remove(self)
+        self.destroy_draw()
+
+    def destroy_draw(self):
         canvas = self.algorator.canvas
         canvas.delete(self.line)
         canvas.delete(self.head)
@@ -141,14 +145,10 @@ class Arrow(object):
             canvas.delete(self.rect)
 
     def export(self, f_out):
-        f_out.write("\tid: {}\n".format(self.id))
-        f_out.write("\tname: {}\n".format(self.name))
-        for k, v in self.args.items():
-            f_out.write("\t\t{}: {}\n".format(k, v))
-        f_out.write("\tstart: {}\n".format(self.start.id))
-        f_out.write("\tto: {}\n".format(self.to.id))
-        f_out.write("\tcx: {}\n".format(self.cx))
-        f_out.write("\tcy: {}\n".format(self.cy))
+        f_out.write("    - id: {}\n".format(self.id))
+        f_out.write("      name: {}\n".format(self.name))
+        f_out.write("      start: {}\n".format(self.start.id))
+        f_out.write("      to: {}\n".format(self.to.id))
 
     ### Drawing an arrow ###
 

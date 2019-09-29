@@ -50,6 +50,9 @@ TODO
 * Do not draw the arrow inside the text
 * Scrollbar in the canvas
 * undo/redo
+* Curve an arrow when two arrows have exactly the same ends.
+* Add a circle in the middle of an arrow to allow to select it.
+  Or: when hoovering, put the line/element in bold to allow to select it.
 o Identify arcs to choose which condition leads to which function
 o Draw arrow head
 o Start and End blocks.
@@ -161,6 +164,7 @@ class Algorator(object):
             button.state(["!pressed"])
         if self.state == new_state:
             self.state = None
+            self.start = None
         else:
             self.state = new_state
             self.buttons[new_state].state(["pressed"])
@@ -188,6 +192,7 @@ class Algorator(object):
         if self.start is not None and self.start == self.selected:
             self.selected = None
             self.selected_l = None
+            self.start = None
         else:
             self.selected = elem
             self.selected_l = elem_lst
@@ -210,7 +215,7 @@ class Algorator(object):
         else:
             if self.state == STATE_RM and not self.moving:
                 self.selected.destroy()
-                self.selected_l.remove(self.selected)
+                self.start = None
             elif self.state == STATE_ARROW:
                 if self.start is None:
                     self.start = self.selected
@@ -220,6 +225,9 @@ class Algorator(object):
                     self.start = None
             elif not self.moving:
                 self.selected.edit()
+                self.start = None
+            else:
+                self.start = None
         self.moving = False
 
     def hold_click(self, event):
