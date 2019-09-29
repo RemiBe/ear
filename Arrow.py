@@ -1,8 +1,64 @@
 
+import math
 
 from Case import Case
 from EditWindow import EditWindow
 import Properties
+
+
+def square(x):
+    return x*x
+
+
+def get_arrow_head(a, b, c, d):
+    # A(a,b) --> B(c,d)
+    # l is the height of the arrow head and of its width:
+    #        B
+    #        ^      ^
+    #       /|\     |
+    #      / | \    | l (input)
+    #   P0+--+--+P1 v
+    #        |M     ^
+    #        |      | L
+    #        |      |
+    #        +A     v
+    #     <----->
+    #        l
+    # L = AB - l
+    # M(p,q)
+    # mu is the director coef of (AB)
+    # nu is the director coef of the perpendicular to (AB)
+    # We look for P0(x0,y0) and P1(x1,y1)
+    l = 10
+    if a == c:
+        # Aligned vertically
+        y = d - l if d > b else d + l
+        return c, d, c-l/2, y, c+l/2, y
+    elif b == d:
+        # Aligned horizontally
+        x = c - l if c > a else c + l
+        return c, d, x, d-l/2, x, d+l/2
+
+    L = math.sqrt(square(d-b) + square(c-a)) - l
+    mu = (d-b) / (c-a)
+    p = (square(L) + - square(l) - square(a) + square(b) + square(c) + square(d) + 2*mu*a*(d-b) - 2*b*d) / (2*(mu*(d-b) + (c-a)))
+    q = mu*(p-a) + b
+    if d != b:
+        nu = -1 / mu
+
+    A = 1
+    B = -2*p
+    C = square(p) - square(l/2) / (square(nu)+1)
+
+    delta = square(B) - 4*A*C
+
+    x0 = (-B -math.sqrt(delta)) / (2*A)
+    x1 = (-B +math.sqrt(delta)) / (2*A)
+
+    y0 = nu*(x0-p) + q
+    y1 = nu*(x1-p) + q
+
+    return c, d, x0, y0, x1, y1
 
 
 class Arrow(object):
@@ -63,6 +119,7 @@ class Arrow(object):
     def destroy(self):
         canvas = self.algorator.canvas
         canvas.delete(self.line)
+        canvas.delete(self.head)
         if self.name is not None:
             canvas.delete(self.text)
             canvas.delete(self.rect)
@@ -92,6 +149,7 @@ class Arrow(object):
                 start_cx = max(start.x1, start.x2)
                 to_cx = min(to.x1, to.x2)
         self.line = canvas.create_line(start_cx, start_cy, to_cx, to_cy)
+        self.head = canvas.create_polygon(*get_arrow_head(start_cx, start_cy, to_cx, to_cy))
 
     def get_side(self):
         """
@@ -120,9 +178,4 @@ class Arrow(object):
         else:
             return "Left" if self.start.cx > self.to.cx else "Right"
 
-    def draw_arrow_head(start_x, start_y, to_x, to_y):
-        """
-        start +----------------> to
-        """
-        # TODO
-        pass
+
