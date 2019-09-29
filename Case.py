@@ -3,12 +3,19 @@ import Properties
 from Block import Block
 
 class Case(Block):
+    """
+    Attributes:
+        text: The id of the Canvas element displaying the case name
+        rect: The id of the Canvas element boxing around the case name
+        x1, y1, x2, y2: coordinates of the upper left and bottow right
+            points of the rect
+        cx, cy: coordinates of the center of the rect
+    """
 
     def __init__(self, algorator, x, y):
         Block.__init__(self, algorator, x, y)
 
     def draw(self, x, y, name):
-        # TODO losange or circle
         canvas = self.algorator.canvas
 
         self.text = canvas.create_text(x, y, text=name, tags="selected", fill="red", font=Properties.FONT)
@@ -36,6 +43,11 @@ class Case(Block):
             return "Add a Case"
         else:
             return "Edit Case {}".format(self.name)
+
+    def export(self, f_out):
+        Block.export(self, f_out)
+        f_out.write("\tcx: {}\n".format(self.cx))
+        f_out.write("\tcy: {}\n".format(self.cy))
 
     def __str__(self):
         return "{}:".format(self.name)

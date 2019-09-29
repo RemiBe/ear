@@ -62,8 +62,25 @@ def get_arrow_head(a, b, c, d):
 
 
 class Arrow(object):
+    """
+    Attributes:
+        algorator: The root element, holding the main window, the canvas
+            and all the other elements
+        id: The unique id of this element
+        name: The name of this element
+        args: The {arg_name: arg_value} arguments of this element
+        start: The Block from which the arrow starts
+        to: The Block at which the arrow points
+        text: The id of the Canvas element displaying the function name
+        line: The id of the Canvas element displaying the arrow line
+        head: The id of the Canvas element displaying the arrow head
+        x1, y1, x2, y2: coordinates of the upper left and bottow right
+            points of the rect
+        cx, cy: coordinates of the center of the rect
+    """
 
     def __init__(self, algorator, start, to):
+        self.id = algorator.get_elem_id()
         self.algorator = algorator
         self.start = start
         self.to = to
@@ -71,7 +88,6 @@ class Arrow(object):
         start.arrows.append(self)
         to.arrows.append(self)
         self.draw(start, to)
-        self.saved = True
 
     def get_default_name(self):
         if type(self.start) != Case:
@@ -123,6 +139,16 @@ class Arrow(object):
         if self.name is not None:
             canvas.delete(self.text)
             canvas.delete(self.rect)
+
+    def export(self, f_out):
+        f_out.write("\tid: {}\n".format(self.id))
+        f_out.write("\tname: {}\n".format(self.name))
+        for k, v in self.args.items():
+            f_out.write("\t\t{}: {}\n".format(k, v))
+        f_out.write("\tstart: {}\n".format(self.start.id))
+        f_out.write("\tto: {}\n".format(self.to.id))
+        f_out.write("\tcx: {}\n".format(self.cx))
+        f_out.write("\tcy: {}\n".format(self.cy))
 
     ### Drawing an arrow ###
 

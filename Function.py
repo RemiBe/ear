@@ -9,6 +9,14 @@ import Properties
 
 
 class Function(Block):
+    """
+    Attributes:
+        text: The id of the Canvas element displaying the function name
+        rect: The id of the Canvas element boxing around the function name
+        x1, y1, x2, y2: coordinates of the upper left and bottow right
+            points of the rect
+        cx, cy: coordinates of the center of the rect
+    """
 
     def __init__(self, algorator, x, y, name=None):
         self.text = None
@@ -44,6 +52,11 @@ class Function(Block):
             return "Add a Function"
         else:
             return "Edit Function {}".format(self.name)
+
+    def export(self, f_out):
+        Block.export(self, f_out)
+        f_out.write("\tcx: {}\n".format(self.cx))
+        f_out.write("\tcy: {}\n".format(self.cy))
 
     def __str__(self):
         return "{}:".format(self.name)

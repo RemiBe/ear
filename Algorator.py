@@ -97,6 +97,7 @@ class Algorator(object):
         selected: The last element on which the user clicked
         moving: Whether the user is moving the selected element
         start: In Arrow state, remembers the last clicked element
+        n_elems: Counter to give ids to elements
     """
 
     def __init__(self):
@@ -115,7 +116,7 @@ class Algorator(object):
         abutton = ttk.Button(self.mainframe, text="Arrow", command=lambda: self.change_state(STATE_ARROW))
         rbutton = ttk.Button(self.mainframe, text="Remove", command=lambda: self.change_state(STATE_RM))
         ibutton = ttk.Button(self.mainframe, text="Import", command=self.import_event)
-        ebutton = ttk.Button(self.mainframe, text="Export", command=self.export_event)
+        ebutton = ttk.Button(self.mainframe, text="Export", command=self.export)
         fbutton.grid(column=1, row=1)
         cbutton.grid(column=2, row=1)
         abutton.grid(column=3, row=1)
@@ -141,6 +142,7 @@ class Algorator(object):
         self.cases = []
         self.arrows = []
         self.start = None
+        self.n_elems = 0
 
         # Display
         for child in self.mainframe.winfo_children():
@@ -229,8 +231,25 @@ class Algorator(object):
         filename = filedialog.askopenfilename()
         print("importing " + filename)
 
-    def export_event(self):
+    def export(self):
         filename = filedialog.asksaveasfilename()
+        with open(filename, "w") as f_out:
+            f_out.write("Algorator version: {}\n".format(__version__))
+            f_out.write("functions:\n")
+            for elem in self.functions:
+                elem.export(f_out)
+            f_out.write("cases:\n")
+            for elem in self.cases:
+                elem.export(f_out)
+            f_out.write("arrows:\n")
+            for elem in self.arrows:
+                elem.export(f_out)
+
+    def get_elem_id(self):
+        i = self.n_elems
+        self.n_elems += 1
+        return i
+
 
 if __name__ == "__main__":
     algorator = Algorator()
