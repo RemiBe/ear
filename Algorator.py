@@ -51,11 +51,11 @@ TODO
 * Scrollbar in the canvas
 * undo/redo
 * Curve an arrow when two arrows have exactly the same ends.
-* Add a circle in the middle of an arrow to allow to select it.
-  Or: when hoovering, put the line/element in bold to allow to select it.
 o Identify arcs to choose which condition leads to which function
 o Draw arrow head
 o Start and End blocks.
+o Add a circle in the middle of an arrow to allow to select it.
+  Or: when hoovering, put the line/element in bold to allow to select it.
 x Losange/circle for case -> would be too big
 x Use arcs instead of lines for arrows to specify loops -> loops are not allowed
 

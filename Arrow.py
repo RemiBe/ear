@@ -6,6 +6,9 @@ from EditWindow import EditWindow
 import Properties
 
 
+RADIUS = 5
+
+
 def square(x):
     return x*x
 
@@ -74,6 +77,9 @@ class Arrow(object):
         text: The id of the Canvas element displaying the function name
         line: The id of the Canvas element displaying the arrow line
         head: The id of the Canvas element displaying the arrow head
+        x1, y1, x2, y2: coordinates of the upper left and bottow right
+            points of the rect/circle
+        cx, cy: coordinates of the center of the rect/circle
     """
 
     def __init__(self, algorator, start, to):
@@ -99,15 +105,31 @@ class Arrow(object):
     def draw(self, start, to):
         canvas = self.algorator.canvas
         self.draw_arrow(start, to)
-        x = (start.cx + to.cx) / 2
-        y = (start.cy + to.cy) / 2
+        self.cx = (start.cx + to.cx) / 2
+        self.cy = (start.cy + to.cy) / 2
         if self.name is not None:
-            self.text = canvas.create_text(x, y, text=self.name, tags="selected", fill="black", font=Properties.FONT)
+            self.text = canvas.create_text(self.cx, self.cy, text=self.name, tags="selected", fill="black", font=Properties.FONT)
             x1, y1, x2, y2 = canvas.bbox(self.text)
             self.rect = canvas.create_rectangle(x1, y1, x2, y2, tags="selected")
+            self.x1 = x1
+            self.y1 = y1
+            self.x2 = x2
+            self.y2 = y2
+        else:
+            r = RADIUS
+            self.rect = canvas.create_oval(self.cx-r, self.cy-r, self.cx+r, self.cy+r, fill="black")
 
     def clicked_on(self, x, y):
-        d = 10 # enable 3 pixels around the arrow
+        # Check if we clicked on the rectangle/circle
+        if self.name is not None:
+            if x >= self.x1 and x <= self.x2 and y >= self.y1 and y <= self.y2:
+                return True
+        else:
+            if math.sqrt(square(x - self.cx) + square(y - self.cy)) < RADIUS:
+                print("clicked on the arrow")
+                return True
+        # Otherwise check if we clicked on the arrow
+        d = 5 # enable `d` pixels around the arrow
         y1 = min(self.start.cy, self.to.cy)
         y2 = max(self.start.cy, self.to.cy)
         if self.start.cx == self.to.cx:
@@ -140,9 +162,9 @@ class Arrow(object):
         canvas = self.algorator.canvas
         canvas.delete(self.line)
         canvas.delete(self.head)
+        canvas.delete(self.rect)
         if self.name is not None:
             canvas.delete(self.text)
-            canvas.delete(self.rect)
 
     def export(self, f_out):
         f_out.write("    - id: {}\n".format(self.id))
