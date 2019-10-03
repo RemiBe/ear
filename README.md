@@ -6,11 +6,14 @@ Be able to fully describe/design a algorithm.
 
 ## How it Works
 
-The algorithm will start from the "Start" block, and finish on the "End"
-block. In between, you can add `Function` blocks, that will hopefully
-transform your data, and `Case` blocks, that enable to choose how
-to pass from a `Function` block to another. Link `Function` and `Case`
-blocks using `Arrows`.
+Run `python ear.py` (with Python3).
+
+The algorithm you are building starts from the "Start" block, and
+finishes on the "End" block.
+In between, you can add `Function` blocks, that will likely transform
+your data, and `Case` blocks, that enable to choose how to pass from
+a `Function` block to another.
+Link `Function` and `Case` blocks using `Arrows`.
 
 ## Author
 
