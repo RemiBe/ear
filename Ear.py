@@ -85,7 +85,7 @@ STATE_ARROW = "arrow_state"
 STATE_RM = "remove_state"
 
 
-class Algorator(object):
+class Ear(object):
     """
     Attributes
         root: The Tkinter root window
@@ -105,7 +105,7 @@ class Algorator(object):
 
     def __init__(self):
         self.root = Tk()
-        self.root.title("Algorator - An Algorithm Creator")
+        self.root.title("Ear - Explicit Algorithm Representation")
 
         self.mainframe = ttk.Frame(self.root, padding="3 3 12 12")
         self.mainframe.grid(column=0, row=0, sticky=(N, W, E, S))
@@ -242,7 +242,7 @@ class Algorator(object):
     def export(self):
         filename = filedialog.asksaveasfilename()
         with open(filename, "w") as f_out:
-            f_out.write("Algorator version: {}\n".format(__version__))
+            f_out.write("Ear version: {}\n".format(__version__))
             f_out.write("functions:\n")
             for elem in self.functions:
                 elem.export(f_out)
@@ -260,6 +260,6 @@ class Algorator(object):
 
 
 if __name__ == "__main__":
-    algorator = Algorator()
+    algorator = Ear()
 
 
