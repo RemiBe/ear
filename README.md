@@ -7,7 +7,7 @@ Be able to fully describe/design a algorithm.
 ## How it Works
 
 Install [tkinter](https://tkdocs.com/tutorial/install.html).
-Run `python ear.py` (with Python3).
+Run `python Ear.py` (with Python3).
 
 The algorithm you are building starts from the "Start" block, and
 finishes on the "End" block.
